@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-Bucks Banking - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <img src="https://media1.tenor.com/m/17pFKrJQR4AAAAAd/default-dance-fortnite.gif" alt="Fortnite Dancing Character" class="dance-container">
+    
+    <div class="container">
+        <div class="fortnite-header">
+            <div class="fortnite-logo">V-Bucks Banking</div>
+            <div class="fortnite-subtext">Squad up with your finances!</div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories = true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <a href="/logout" class="logout-link">Log Out</a>
+
+        <h1>Battle Pass Options</h1>
+
+        <div class="account-card">
+            <div class="account-name">Savings V-Bucks</div>
+            <div class="account-info">
+                <a href="/details?account=100" class="btn">View Details</a>
+            </div>
+        </div>
+
+        <div class="account-card">
+            <div class="account-name">Checking V-Bucks</div>
+            <div class="account-info">
+                <a href="/details?account=190" class="btn">View Details</a>
+            </div>
+        </div>
+
+        <div class="account-card">
+            <div class="account-name">Transfer V-Bucks</div>
+            <div class="account-info">
+                <a href="/transfer" class="btn">Start Transfer</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

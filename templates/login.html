@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-Bucks Banking - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <img src="https://media1.tenor.com/m/17pFKrJQR4AAAAAd/default-dance-fortnite.gif" alt="Fortnite Dancing Character" class="dance-container">
+    
+    <div class="container">
+        <div class="fortnite-header">
+            <div class="fortnite-logo">V-Bucks Banking</div>
+            <div class="fortnite-subtext">Drop in to your account!</div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            <span style="font-size: 24px;">❌</span> {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="login-container">
+            <h1>Battle Pass Login</h1>
+            
+            <form method="post" action="/login" class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="email">Epic Games Email</label>
+                    <input type="text" name="email" id="email" placeholder="Enter your email" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Secret Password</label>
+                    <input type="password" name="password" id="password" placeholder="Enter your password" />
+                </div>
+                
+                <input type="submit" value="Drop Into Battle" class="btn" />
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            </form>
+
+            <div id="loading" style="display:none;">
+                <p>Boarding the bus...</p>
+                <progress></progress>
+            </div>
+        </div>
+    </div>
+    <script>
+      document.getElementById("loginForm").addEventListener("submit", function() {
+          document.getElementById("loading").style.display = "block";
+      });
+    </script>
+</body>
+</html>
