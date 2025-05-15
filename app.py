@@ -15,6 +15,9 @@ from account_service import get_balance, do_transfer
 
 app = Flask(__name__)
 
+# To protect against CSRF attacks, we use the Flask-WTF extension. With each login request,
+# a CSRF token is generated. This ensures that when a user makes a transfer, the request is
+# coming from this application and not from a malicious source.
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('CSRF_SECRET_KEY')
 csrf = CSRFProtect(app)
@@ -31,6 +34,12 @@ def home():
     """
     return redirect('/dashboard')
 
+
+# User enumeration attacks are prevented here adding a two second delay
+# to the response time for all login attempts, regardless of whether the email
+# exists in the database or not. This way, an attacker cannot determine if a
+# specific email is registered or not based on the response time. Additionally
+# the login attempts are rate limited to prevent brute-force attacks.
 @app.route("/login", methods=["POST"])
 def login():
     """
@@ -45,7 +54,10 @@ def login():
         or the login page with an error message on failure.
 
     """
-    if too_soon_since_last_login(): # validates that the login
+    # This ensures that the login attempts are rate limited to prevent brute-force attacks.
+    # However since it checks IP address, it is not effective at stopping a botnet attack,
+    # but for this application it is sufficient.
+    if too_soon_since_last_login():
         return render_template("login.html", error="Too many login attempts, please wait a moment.")
     start_time = time.time()
 
@@ -53,6 +65,7 @@ def login():
     password = request.form.get("password")
     user = get_user_with_credentials(email, password)
 
+    # This is to mitigate timing attacks by normalizing response times to a minimum of 2 seconds.
     wait_to_avoid_timing_attacks(start_time)
 
     if not user:

@@ -12,7 +12,8 @@ import jwt
 load_dotenv()
 SECRET = os.getenv('SECRET')
 
-_login_attempt_timestamps = {}
+# for future use it would be better to use a database or a cache like Redis
+_login_attempt_timestamps = {} 
 
 def login_required(func):
     """
