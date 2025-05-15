@@ -35,7 +35,7 @@ def home():
     return redirect('/dashboard')
 
 
-# User enumeration attacks are prevented here adding a two second delay
+# User enumeration attacks are prevented here by adding a two second delay
 # to the response time for all login attempts, regardless of whether the email
 # exists in the database or not. This way, an attacker cannot determine if a
 # specific email is registered or not based on the response time. Additionally
@@ -61,6 +61,8 @@ def login():
         return render_template("login.html", error="Too many login attempts, please wait a moment.")
     start_time = time.time()
 
+    # we validate user authentication after validating the rate limit because there is no reason
+    # to waste resources looking up the user if the rate limit is exceeded.
     email = request.form.get("email")
     password = request.form.get("password")
     user = get_user_with_credentials(email, password)
@@ -105,7 +107,7 @@ def details():
         "details.html", 
         user=g.user,
         account_number=account_number,
-        balance = get_balance(account_number, g.user))
+        balance = get_balance(account_number, g.user)) 
 
 @app.route("/transfer", methods=["GET", "POST"])
 @login_required
@@ -128,22 +130,32 @@ def transfer():
 
     source = request.form.get("from")
     target = request.form.get("to")
+
+    # Validate that the amount is an integer and not a string or something else malicious.
     try:
         amount = int(request.form.get("amount"))
     except ValueError:
         abort(400, "Invalid amount, must be an integer")
 
+    # Validate that users can't transfer negative money or too much money.
     if amount < 0:
         abort(400, "NO STEALING")
     if amount > 1000:
         abort(400, "WOAH THERE TAKE IT EASY")
 
+    # Validate that the source account exists and has enough money.
     available_balance = get_balance(source, g.user)
     if available_balance is None:
         abort(404, "Account not found")
     if amount > available_balance:
         abort(400, "You don't have that much")
 
+    # After all of those layers of validation we can be sure that this transfer is safe and valid.
+    # One thing I find curious though, with the current implementation, we don't validate that the
+    # target account exists until the SQL query is executed. When a user tries to transfer money to
+    # an account that doesn't exist, we get a bad request error and the transfer fails. While I
+    # don't believe this is vulnerable to SQL injection, it is another layer of validation that
+    # could be added if you wanted to be extra careful.
     if do_transfer(source, target, amount):
         flash(message="Transfer successful.")
     else:

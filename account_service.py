@@ -1,5 +1,14 @@
 import sqlite3
 
+
+# It is important that the get_balance function only returns the balance if the owner
+# is the same as the one in the database. This is to prevent unauthorized viewing of
+# account balances.
+
+# Whenever we have to deal with user input and a database, we always have to be
+# careful about SQL injection. This is why we use parameterized queries. Parameterized queries
+# ensure that the SQL query will be executed exacly as it is written, and that
+# the user input will not be executed as part of the SQL query.
 def get_balance(account_number, owner):
     """
     Retrieve the balance for a specific account and owner from the database.
@@ -25,6 +34,7 @@ def get_balance(account_number, owner):
     finally:
         con.close()
 
+# Again here we prevent the possibility of SQL injection by using parameterized queries.
 def do_transfer(source, target, amount):
     """
     Transfer a specified amount from the source account to the target account.

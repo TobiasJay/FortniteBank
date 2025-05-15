@@ -12,9 +12,7 @@ import jwt
 load_dotenv()
 SECRET = os.getenv('SECRET')
 
-# for future use it would be better to use a database or a cache like Redis
-_login_attempt_timestamps = {} 
-
+# Learning decorators is a nifty way to simplify and beautify your code.
 def login_required(func):
     """
     Decorator that ensures a user is logged in before allowing access to the decorated route.
@@ -33,6 +31,12 @@ def login_required(func):
         return func(*args, **kwargs)
     return wrapper
 
+# XSS attacks are executed similarly to SQL injection attacks. They both take advantage of
+# poorly validtated user input. By separating this app into client and server sides, we
+# eliminate the possibility of XSS attacks. This function which is dependent on user input is
+# not suseptible to XSS attacks because we don't directly run the user input in as code.
+# This is actually a better example of a SQL injection avoidance since we are using parameterized
+# queries, but the idea is similar.
 def get_user_with_credentials(email, password):
     """
     Authenticate a user by email and password.
@@ -103,7 +107,9 @@ def create_token(email):
 
     The token is signed using the HS256 algorithm and a secret key.
     """
-    now = datetime.now(timezone.utc)  # Make datetime timezone-aware
+    now = datetime.now(timezone.utc)  # It is important that tokens expire so that a malicious
+    # user cannot use the token forever. This is why we set the expiration time to 60 minutes.
+    # A more secure site will use a shorter expiration time. 
     payload = {
         'sub': email,
         'iat': int(now.timestamp()),
@@ -112,6 +118,8 @@ def create_token(email):
     token = jwt.encode(payload, SECRET, algorithm='HS256')
     return token
 
+# for future use it would be better to use a database or a cache like Redis
+_login_attempt_timestamps = {}
 def too_soon_since_last_login():
     """
     Checks if the current login attempt from a client IP address is occurring too 
