@@ -9,7 +9,7 @@ from flask_wtf.csrf import CSRFProtect
 from user_service import (
     get_user_with_credentials, login_required,
     too_soon_since_last_login, wait_to_avoid_timing_attacks)
-from account_service import get_balance, do_transfer
+from account_service import get_balance, do_transfer, check_account_exists
 
 
 
@@ -150,12 +150,15 @@ def transfer():
     if amount > available_balance:
         abort(400, "You don't have that much")
 
-    # After all of those layers of validation we can be sure that this transfer is safe and valid.
-    # One thing I find curious though, with the current implementation, we don't validate that the
-    # target account exists until the SQL query is executed. When a user tries to transfer money to
-    # an account that doesn't exist, we get a bad request error and the transfer fails. While I
-    # don't believe this is vulnerable to SQL injection, it is another layer of validation that
-    # could be added if you wanted to be extra careful.
+    # Validate that the target account exists and is not the same as the source account.
+    # If the target account doesn't exist then we don't tell them specifically that
+    # the account doesn't exist, we just say that the transfer failed. This is to
+    # prevent user enumeration attacks.
+    if check_account_exists(target) is None:
+        abort(404, "Account not found")
+    if source == target:
+        abort(400, "You can't transfer money to and from the same account")
+
     if do_transfer(source, target, amount):
         flash(message="Transfer successful.")
     else:

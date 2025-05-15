@@ -34,6 +34,28 @@ def get_balance(account_number, owner):
     finally:
         con.close()
 
+def check_account_exists(account_number):
+    """
+    Check if an account exists in the database.
+
+    Args:
+        account_number (int or str): The unique identifier of the account.
+
+    Returns:
+        bool: True if the account exists, False otherwise.
+    """
+    try:
+        con = sqlite3.connect('bank.db')
+        cur = con.cursor()
+        cur.execute('''
+            SELECT id FROM accounts where id=?''',
+            (account_number,))
+        row = cur.fetchone()
+        return row is not None
+    finally:
+        con.close()
+
+
 # Again here we prevent the possibility of SQL injection by using parameterized queries.
 def do_transfer(source, target, amount):
     """
