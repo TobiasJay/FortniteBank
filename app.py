@@ -1,4 +1,6 @@
 import time
+import os
+
 from flask import (
     Flask, request, make_response, redirect,
     render_template, g, abort, flash)
@@ -7,12 +9,14 @@ from user_service import (
     get_user_with_credentials, login_required,
     too_soon_since_last_login, wait_to_avoid_timing_attacks)
 from account_service import get_balance, do_transfer
+from dotenv import load_dotenv
 
 
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = '1a9f6b1fd20d54f64697139215cbf3b2cae09a0a8ba341f50e7f5ca848c6e4f3'
+load_dotenv()
+app.config['CSRF_SECRET_KEY'] = os.getenv('CSRF_SECRET_KEY')
 csrf = CSRFProtect(app)
 
 @app.route("/", methods=['GET'])
